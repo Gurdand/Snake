@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Threading;
+
 namespace Snake
 {
     class Program
@@ -12,20 +14,42 @@ namespace Snake
         {
             Console.SetBufferSize(80, 25);
 
-            HorisontalLine upLine = new HorisontalLine(0, 78, 0, '+');
-            HorisontalLine downLine = new HorisontalLine(0, 78, 24, '+');
-            VerticalLine leftLine = new VerticalLine(0, 0, 24, '+');
-            VerticalLine rightLine = new VerticalLine(78, 0, 24, '+');
-            upLine.Drow();
-            downLine.Drow();
-            leftLine.Drow();
-            rightLine.Drow();
+            Walls walls = new Walls(80, 25);
+            walls.Draw();
 
             Point p = new Point(4, 5, '*');
             Snake snake = new Snake(p, 4, Direction.RIGHT);
             snake.Drow();
 
-            Console.ReadKey();
+            FoodCreator foodCreator = new FoodCreator(80,25,'$');
+            Point food = foodCreator.CreateFood();
+            food.Drow();
+
+            while (true)
+            {
+                if( walls.IsHit(snake) || snake.IsHitTail())
+                {
+                    break;
+                }
+
+                if (snake.Eat(food))
+                {
+                    food = foodCreator.CreateFood();
+                    food.Drow();
+                }
+                else
+                {
+                    snake.Move();
+                }
+
+                Thread.Sleep(100);
+
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo key = Console.ReadKey();
+                    snake.HandleKey(key.Key);
+                }
+            }
         }
     }
 }
